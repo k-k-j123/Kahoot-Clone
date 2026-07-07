@@ -32,6 +32,7 @@ public class QuestionService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        question.setId(null);
         question.setQuiz(quizOpt.get());
 
         if (question.getQuestionOrder() == null) {

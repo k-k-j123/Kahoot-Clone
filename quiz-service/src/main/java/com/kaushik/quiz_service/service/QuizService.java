@@ -31,6 +31,7 @@ public class QuizService {
     public ResponseEntity<Quiz> createQuiz(Quiz quiz) {
         Quiz q = new Quiz();
         try {
+            quiz.setId(null);
             quizRepo.save(quiz);
             q.setTitle(quiz.getTitle());
             q.setDescription(quiz.getDescription());

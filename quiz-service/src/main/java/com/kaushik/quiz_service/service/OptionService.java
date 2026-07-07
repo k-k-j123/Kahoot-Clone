@@ -28,6 +28,7 @@ public class OptionService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
+        option.setId(null);
         option.setQuestion(questionOpt.get());
 
         if (option.getOptionOrder() == null) {
