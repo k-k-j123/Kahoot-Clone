@@ -29,17 +29,15 @@ public class QuizService {
     }
 
     public ResponseEntity<Quiz> createQuiz(Quiz quiz) {
-        Quiz q = new Quiz();
         try {
             quiz.setId(null);
-            quizRepo.save(quiz);
-            q.setTitle(quiz.getTitle());
-            q.setDescription(quiz.getDescription());
+            Quiz saved = quizRepo.save(quiz);
+            return new ResponseEntity<>(saved, HttpStatus.OK);
         } catch (Exception e) {
             System.out.println("exception occurred in creating quiz :");
             e.printStackTrace();
+            return new ResponseEntity<>(new Quiz(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(q, HttpStatus.OK);
     }
 
     public ResponseEntity<Quiz> getQuizDetails(Long id) {
