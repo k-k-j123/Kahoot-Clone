@@ -11,7 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,49 +28,23 @@ public class QuizService {
     }
 
     public ResponseEntity<Quiz> createQuiz(Quiz quiz) {
-        try {
-            quiz.setId(null);
-            Quiz saved = quizRepo.save(quiz);
-            return new ResponseEntity<>(saved, HttpStatus.OK);
-        } catch (Exception e) {
-            System.out.println("exception occurred in creating quiz :");
-            e.printStackTrace();
-            return new ResponseEntity<>(new Quiz(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        quiz.setId(null);
+        Quiz saved = quizRepo.save(quiz);
+        return new ResponseEntity<>(saved, HttpStatus.OK);
     }
 
     public ResponseEntity<Quiz> getQuizDetails(Long id) {
-        Quiz q = new Quiz();
-        try {
-            Optional<Quiz> opt = quizRepo.findById(id);
-            if (opt.isPresent()) {
-                q = opt.get();
-            }
-        } catch (Exception e) {
-            System.out.println("exception occurred in getting quiz details:");
-            e.printStackTrace();
-        }
+        Quiz q = quizRepo.findById(id).orElse(new Quiz());
         return new ResponseEntity<>(q, HttpStatus.OK);
     }
 
     public ResponseEntity<List<Quiz>> getAllQuizes() {
-        List<Quiz> allquizes = new ArrayList<>();
-        try {
-            allquizes = quizRepo.findAll();
-        } catch (Exception e) {
-            System.out.println("exception occurred in getting all quiz details:");
-            e.printStackTrace();
-        }
+        List<Quiz> allquizes = quizRepo.findAll();
         return new ResponseEntity<>(allquizes, HttpStatus.OK);
     }
 
     public ResponseEntity<?> deleteQuiz(Long id) {
-        try {
-            quizRepo.deleteById(id);
-        } catch (Exception e) {
-            System.out.println("exception occurred in deleting the quiz:");
-            e.printStackTrace();
-        }
+        quizRepo.deleteById(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
@@ -82,32 +55,18 @@ public class QuizService {
         }
 
         Quiz quiz = quizOpt.get();
-        QuizPlayDTO playDTO = new QuizPlayDTO();
-        playDTO.setId(quiz.getId());
-        playDTO.setTitle(quiz.getTitle());
-        playDTO.setDescription(quiz.getDescription());
+        List<QuizPlayDTO.QuestionPlayDTO> questions = questionRepo.findByQuizId(id).stream()
+                .map(q -> {
+                    List<QuizPlayDTO.OptionPlayDTO> options = optionRepo.findByQuestionId(q.getId()).stream()
+                            .map(o -> new QuizPlayDTO.OptionPlayDTO(o.getId(), o.getOptionText(), o.getOptionOrder()))
+                            .toList();
+                    return new QuizPlayDTO.QuestionPlayDTO(
+                            q.getId(), q.getQuestionText(), q.getQuestionOrder(),
+                            q.getTimeLimitSeconds(), q.getPoints(), options);
+                })
+                .toList();
 
-        List<Question> questions = questionRepo.findByQuizId(id);
-        for (Question question : questions) {
-            QuizPlayDTO.QuestionPlayDTO qDTO = new QuizPlayDTO.QuestionPlayDTO();
-            qDTO.setId(question.getId());
-            qDTO.setQuestionText(question.getQuestionText());
-            qDTO.setQuestionOrder(question.getQuestionOrder());
-            qDTO.setTimeLimitSeconds(question.getTimeLimitSeconds());
-            qDTO.setPoints(question.getPoints());
-
-            List<Option> options = optionRepo.findByQuestionId(question.getId());
-            for (Option option : options) {
-                QuizPlayDTO.OptionPlayDTO oDTO = new QuizPlayDTO.OptionPlayDTO();
-                oDTO.setId(option.getId());
-                oDTO.setOptionText(option.getOptionText());
-                oDTO.setOptionOrder(option.getOptionOrder());
-                qDTO.getOptions().add(oDTO);
-            }
-
-            playDTO.getQuestions().add(qDTO);
-        }
-
+        QuizPlayDTO playDTO = new QuizPlayDTO(quiz.getId(), quiz.getTitle(), quiz.getDescription(), questions);
         return new ResponseEntity<>(playDTO, HttpStatus.OK);
     }
 }
