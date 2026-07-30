@@ -1,8 +1,6 @@
 package com.kaushik.quiz_service.service;
 
 import com.kaushik.quiz_service.dto.QuizPlayDTO;
-import com.kaushik.quiz_service.model.Option;
-import com.kaushik.quiz_service.model.Question;
 import com.kaushik.quiz_service.model.Quiz;
 import com.kaushik.quiz_service.repository.OptionRepo;
 import com.kaushik.quiz_service.repository.QuestionRepo;
